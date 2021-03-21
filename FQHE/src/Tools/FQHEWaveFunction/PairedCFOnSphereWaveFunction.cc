@@ -328,7 +328,7 @@ Complex PairedCFOnSphereWaveFunction::GetForOtherParameters( double *coefficient
 // x: positions to evaluate the wavefuntion in
 // format for passing parameters in the matrix coefficients: coefficients[nbrSet][LandauLevel],
 // the entry [][NbrLandauLevels] corresponds to the MooreRead Term.
-void PairedCFOnSphereWaveFunction::GetForManyParameters(ComplexVector &results, ComplexVector &uv, double **coefficients)
+void PairedCFOnSphereWaveFunction::GetForManyParametersComplex(ComplexVector &results, ComplexVector &uv, double **coefficients)
 {
   this->OrbitalValues = Orbitals->CalculateFromSpinorVariables(uv);
   this->EvaluateTables();

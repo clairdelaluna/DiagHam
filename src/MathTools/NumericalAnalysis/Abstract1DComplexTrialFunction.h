@@ -74,6 +74,7 @@ class Abstract1DComplexTrialFunction : public Abstract1DComplexFunction
   // x = positions to evaluate the wavefuntion in
   // format for passing parameters as [nbrSet][nbrParameter],
   virtual void GetForManyParameters(ComplexVector &results, RealVector& x, double **coefficients) = 0;
+  virtual void GetForManyParametersComplex(ComplexVector &results, ComplexVector& uv, double** coefficients) =0;
 
   // access internal values of parameters
   virtual double *GetTrialParameters(){return this->TrialParameters;}
