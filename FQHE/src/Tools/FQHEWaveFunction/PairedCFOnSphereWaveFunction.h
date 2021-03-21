@@ -145,7 +145,7 @@ class PairedCFOnSphereWaveFunction: public Abstract1DComplexTrialFunctionOnSpher
   // x: positions to evaluate the wavefuntion in
   // format for passing parameters in the matrix coefficients coefficients[nbrSet][LandauLevel],
   // the entry [][NbrLandauLevels] corresponds to the MooreRead Term.
-  virtual void GetForManyParameters(ComplexVector &results, ComplexVector& uv, double **coefficients);
+  virtual void GetForManyParametersComplex(ComplexVector &results, ComplexVector& uv, double** coefficients);
   
   // set new values of the trial coefficients (keeping the number of LL's)
   virtual void SetTrialParameters(double * coefficients);
