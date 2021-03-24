@@ -73,6 +73,8 @@ class PairedCFOnSphereWaveFunction: public Abstract1DComplexTrialFunctionOnSpher
   // precalculated sums over Orbitals
   Complex **gAlpha;
 
+  ComplexVector AllDerivatives;
+
   // if particles are very close to each other, interpolation occurs in JainCFOrbitals
   // this variable is used to pass on this value between the different subroutines
   double Interpolation;
@@ -136,7 +138,7 @@ class PairedCFOnSphereWaveFunction: public Abstract1DComplexTrialFunctionOnSpher
   // return value = function value at (uv)
   virtual Complex CalculateFromSpinorVariables(ComplexVector& uv);
 
-  virtual ComplexVector& CalcAllDerivatives();
+  virtual ComplexVector& CalcAllDerivatives(ComplexVector AllDerivatives, ComplexVector &Psi);
   
   // get a value of the wavefunction for the last set of coordinates, but with different variational coefficients
   virtual Complex GetForOtherParameters( double *coefficients);
@@ -145,7 +147,9 @@ class PairedCFOnSphereWaveFunction: public Abstract1DComplexTrialFunctionOnSpher
   // x: positions to evaluate the wavefuntion in
   // format for passing parameters in the matrix coefficients coefficients[nbrSet][LandauLevel],
   // the entry [][NbrLandauLevels] corresponds to the MooreRead Term.
-  virtual void GetForManyParametersComplex(ComplexVector &results, ComplexVector& uv, double** coefficients);
+  virtual void GetForManyParameters(ComplexVector &results, RealVector& x, double** coefficients);
+
+  void GetForManyParametersComplex(ComplexVector &results, ComplexVector& uv, double** coefficients);
   
   // set new values of the trial coefficients (keeping the number of LL's)
   virtual void SetTrialParameters(double * coefficients);

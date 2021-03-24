@@ -37,7 +37,7 @@
 #include "Abstract1DComplexTrialFunction.h"
 #include "Vector/RealVector.h"
 #include "Vector/ComplexVector.h"
-
+#include <iostream>
 
 class RealVector;
 
@@ -82,7 +82,7 @@ class Abstract1DComplexTrialFunctionOnSphere : public Abstract1DComplexTrialFunc
   // x = positions to evaluate the wavefuntion in
   // format for passing parameters as [nbrSet][nbrParameter],
   virtual void GetForManyParameters(ComplexVector &results, RealVector& x, double **coefficients) = 0;
-  virtual void GetForManyParametersComplex(ComplexVector &results, ComplexVector& uv, double** coefficients) = 0;
+  virtual void GetForManyParametersComplex(ComplexVector &results, ComplexVector& uv, double** coefficients){std::cout<<"dummy virtual complex fn";}
   // access internal values of parameters
   virtual double *GetTrialParameters(){return this->TrialParameters;}
 

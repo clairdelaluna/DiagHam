@@ -80,11 +80,10 @@ PairedCFOnSphereWaveFunction::PairedCFOnSphereWaveFunction(int nbrParticles, int
   this->Flag.Initialize();
   this->Ji = new Complex[this->NbrParticles];
   
-  if(calcDeriv){
+  if(calcDeriv==true){
   this->AllDerivatives.Resize(this->NbrLandauLevels+1);
   this->M = new ComplexSkewSymmetricMatrix(this->NbrParticles);
   }
-  else
   
   this->gAlpha = new Complex*[this->NbrLandauLevels];
   for (int i=0; i< this->NbrLandauLevels; ++i)
@@ -132,10 +131,9 @@ PairedCFOnSphereWaveFunction::PairedCFOnSphereWaveFunction(const PairedCFOnSpher
   this->gAlpha = new Complex*[this->NbrLandauLevels];
   for (int i=0; i< this->NbrLandauLevels; ++i)
     gAlpha[i]= new Complex[NbrParticles*NbrParticles];
-  if(calcDeriv){
-  this->AllDerivatives.Resize(this->NbrLandauLevels+1);
-  this->M = new ComplexSkewSymmetricMatrix(this->NbrParticles);
-  }
+  this->AllDerivatives=function.AllDerivatives;
+  this->M = function.M;
+
   
 }
 
@@ -258,13 +256,13 @@ Complex PairedCFOnSphereWaveFunction::CalculateFromSpinorVariables(ComplexVector
 
 // help text needed: this call evaluates the derivates at the coordinates defined by the last call to operator () or CalculateFromSpinorVariables()
 // returns a reference to the class's internal vector of derivatives
-ComplexVector & PairedCFOnSphereWaveFunction::CalcAllDerivatives()
+ComplexVector & PairedCFOnSphereWaveFunction::CalcAllDerivatives(ComplexVector AllDerivatives, ComplexVector &Psi)
 {
   
-  this->AllDerivatives[0] = this->OrbitalValues;
+  this->AllDerivatives[0] = this->Psi[0];
 	
   Complex tmp;
-  for (int s=0; s<this->nbrLandauLevel; ++s) // number through derivatives d/dA_s
+  for (int s=0; s<this->NbrLandauLevels; ++s) // number through derivatives d/dA_s
     {
       AllDerivatives[s+1]=0.0;
       for (int PairI=0; PairI<this->NbrParticles; ++PairI)
@@ -277,23 +275,22 @@ ComplexVector & PairedCFOnSphereWaveFunction::CalcAllDerivatives()
 		    {
 		      if ((i==PairI)&&(j==PairJ))
 			{
-			  this->M[i][j]= this->ElementNorm*Ji[i]*Ji[j]*gAlpha[s][i*this->NbrParticles+j];
+			  this->M->SetMatrixElement(i,j,this->ElementNorm*Ji[i]*Ji[j]*gAlpha[s][i*this->NbrParticles+j]);
 			}
 		      else
 			{
 			  tmp=0.0; 
-			  for (int n=0; n<this->NbrLandauLevel; ++n)
+			  for (int n=0; n<this->NbrLandauLevels; ++n)
 			    tmp+=TrialParameters[n]*gAlpha[n][i*this->NbrParticles+j];
-			  this->M[i][j]= this->ElementNorm*Ji[i]*Ji[j]*(this->Slater->getMatrixElement(i,j) + tmp);
+			  this->M->SetMatrixElement(i,j,(this->ElementNorm*Ji[i]*Ji[j]*(Slater->GetMatrixElement(i,j) + tmp)));
 			}
-		      // M[j][i]=-M[i][j];     // not required - the matrix is defined to be antisymmetric!
-		    }
+		     		    }
 		  // M[i][i]=0.0; // not required - the matrix is defined to be antisymmetric!
 		}
 	      AllDerivatives[s+1] += M->Pfaffian();
 	    }
 	}
-      //AllDerivative[s+1] *= 2.0/((double)N/2.0-1.0)*this->interpolation_factor;
+      //AllDerivatives[s+1] *= 2.0/((double)N/2.0-1.0)*this->interpolation_factor;
     }
   AllDerivatives *= Interpolation*AdditionalJastrow; // apply the same normalisation factor as in calculation of wave function.
   return this->AllDerivatives;
@@ -331,6 +328,34 @@ Complex PairedCFOnSphereWaveFunction::GetForOtherParameters( double *coefficient
 void PairedCFOnSphereWaveFunction::GetForManyParametersComplex(ComplexVector &results, ComplexVector &uv, double **coefficients)
 {
   this->OrbitalValues = Orbitals->CalculateFromSpinorVariables(uv);
+  this->EvaluateTables();
+  Complex tmp;
+  int numParamSets=results.GetVectorDimension();
+  double *tmpCoefficients;
+  for (int s=0; s<numParamSets; ++s)
+    {
+      tmpCoefficients = coefficients[s];
+      // initialize Slater determinant (or Pfaffian matrix)
+      for (int i=0;i<this->NbrParticles;++i)
+	{
+	  for(int j=0;j<i;++j)
+	    {
+	      tmp=0.0;
+	      for (int n=0; n<this->NbrLandauLevels; ++n)
+		tmp+=tmpCoefficients[n]*this->gAlpha[n][i*this->NbrParticles+j];	    
+	      Slater->SetMatrixElement(i,j, this->ElementNorm*this->Ji[i]*this->Ji[j]
+				       *(tmpCoefficients[this->NbrLandauLevels]/Orbitals->JastrowFactorElement(i,j) + tmp));
+	    }
+	}
+      tmp=Slater->Pfaffian()*this->Interpolation*AdditionalJastrow;
+      results.Re(s)=Real(tmp);
+      results.Im(s)=Imag(tmp);
+    }  
+}
+
+void PairedCFOnSphereWaveFunction::GetForManyParameters(ComplexVector &results, RealVector& x, double **coefficients)
+{
+ this->OrbitalValues = (*Orbitals)(x);
   this->EvaluateTables();
   Complex tmp;
   int numParamSets=results.GetVectorDimension();
