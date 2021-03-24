@@ -259,9 +259,10 @@ Complex PairedCFOnSphereWaveFunction::CalculateFromSpinorVariables(ComplexVector
 ComplexVector & PairedCFOnSphereWaveFunction::CalcAllDerivatives(ComplexVector AllDerivatives, ComplexVector &Psi)
 {
   
-  this->AllDerivatives[0] = this->Psi[0];
+  this->AllDerivatives[0] = Psi[0];
 	
   Complex tmp;
+  Complex slaterValue;
   for (int s=0; s<this->NbrLandauLevels; ++s) // number through derivatives d/dA_s
     {
       AllDerivatives[s+1]=0.0;
@@ -282,7 +283,8 @@ ComplexVector & PairedCFOnSphereWaveFunction::CalcAllDerivatives(ComplexVector A
 			  tmp=0.0; 
 			  for (int n=0; n<this->NbrLandauLevels; ++n)
 			    tmp+=TrialParameters[n]*gAlpha[n][i*this->NbrParticles+j];
-			  this->M->SetMatrixElement(i,j,(this->ElementNorm*Ji[i]*Ji[j]*(Slater->GetMatrixElement(i,j) + tmp)));
+                          Slater->GetMatrixElement(i,j,slaterValue); 
+			  this->M->SetMatrixElement(i,j,(this->ElementNorm*Ji[i]*Ji[j]*(slaterValue + tmp)));
 			}
 		     		    }
 		  // M[i][i]=0.0; // not required - the matrix is defined to be antisymmetric!
