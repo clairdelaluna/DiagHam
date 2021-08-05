@@ -153,7 +153,9 @@ class PairedCFOnSphereWaveFunction: public Abstract1DComplexTrialFunctionOnSpher
   
   // set new values of the trial coefficients (keeping the number of LL's)
   virtual void SetTrialParameters(double * coefficients);
-
+  // normalize the wave-function to one for the given particle positions
+  // s = scale factor to apply to each element
+  void PairedCFOnSphereWaveFunction::ScaleElementNorm(double s);
   // normalize the wave-function to one for the given particle positions
   // x = point where the function has to be evaluated
   void AdaptNorm(RealVector& x);

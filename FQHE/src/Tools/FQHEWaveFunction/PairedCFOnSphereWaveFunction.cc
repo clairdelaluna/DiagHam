@@ -392,6 +392,12 @@ void PairedCFOnSphereWaveFunction::SetTrialParameters(double * coefficients)
 }
 
 // normalize the wave-function to one for the given particle positions
+// s = scale factor to apply to each element
+void PairedCFOnSphereWaveFunction::ScaleElementNorm(double s)
+{
+  this->ElementNorm*= s;
+}
+// normalize the wave-function to one for the given particle positions
 // x = point where the function has to be evaluated
 void PairedCFOnSphereWaveFunction::AdaptNorm(RealVector& x)
 {
