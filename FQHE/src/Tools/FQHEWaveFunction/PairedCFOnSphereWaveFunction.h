@@ -73,8 +73,6 @@ class PairedCFOnSphereWaveFunction: public Abstract1DComplexTrialFunctionOnSpher
   // precalculated sums over Orbitals
   Complex **gAlpha;
 
-  ComplexVector AllDerivatives;
-
   // if particles are very close to each other, interpolation occurs in JainCFOrbitals
   // this variable is used to pass on this value between the different subroutines
   double Interpolation;
@@ -138,7 +136,7 @@ class PairedCFOnSphereWaveFunction: public Abstract1DComplexTrialFunctionOnSpher
   // return value = function value at (uv)
   virtual Complex CalculateFromSpinorVariables(ComplexVector& uv);
 
-  virtual ComplexVector& CalcAllDerivatives(ComplexVector AllDerivatives, ComplexVector &Psi);
+  virtual void CalcAllDerivatives(ComplexVector &AllDerivatives, ComplexVector &Psi);
   
   // get a value of the wavefunction for the last set of coordinates, but with different variational coefficients
   virtual Complex GetForOtherParameters( double *coefficients);

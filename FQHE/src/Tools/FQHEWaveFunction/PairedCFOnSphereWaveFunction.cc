@@ -82,10 +82,7 @@ PairedCFOnSphereWaveFunction::PairedCFOnSphereWaveFunction(int nbrParticles, int
   this->Ji = new Complex[this->NbrParticles];
   
   if(calcDeriv==true)
-    {
-      this->AllDerivatives.Resize(this->NbrLandauLevels+1);
-      this->M = new ComplexSkewSymmetricMatrix(this->NbrParticles);
-    }
+    this->M = new ComplexSkewSymmetricMatrix(this->NbrParticles);
   else
     this->M = nullptr;
   
@@ -135,13 +132,9 @@ PairedCFOnSphereWaveFunction::PairedCFOnSphereWaveFunction(const PairedCFOnSpher
   this->gAlpha = new Complex*[this->NbrLandauLevels];
   for (int i=0; i< this->NbrLandauLevels; ++i)
     gAlpha[i]= new Complex[NbrParticles*NbrParticles];
-  this->AllDerivatives=function.AllDerivatives;
 
   if(function.M != nullptr)
-    {
-      this->AllDerivatives.Resize(this->NbrLandauLevels+1);
-      this->M = new ComplexSkewSymmetricMatrix(this->NbrParticles);
-    }
+    this->M = new ComplexSkewSymmetricMatrix(this->NbrParticles);
   else
     this->M = nullptr;
 }
@@ -265,11 +258,18 @@ Complex PairedCFOnSphereWaveFunction::CalculateFromSpinorVariables(ComplexVector
 
 
 // help text needed: this call evaluates the derivates at the coordinates defined by the last call to operator () or CalculateFromSpinorVariables()
-// returns a reference to the class's internal vector of derivatives
-ComplexVector & PairedCFOnSphereWaveFunction::CalcAllDerivatives(ComplexVector AllDerivatives, ComplexVector &Psi)
+// writes output to the given vector "AllDerivatives" with the vector of derivatives
+
+void PairedCFOnSphereWaveFunction::CalcAllDerivatives(ComplexVector &AllDerivatives, ComplexVector &Psi)
 {
+
+  if (this->M==nullptr)
+    {
+      std::cerr << "Error - PairedCFOnSphereWaveFunction not set up to calculate derivatives"<<std::endl;
+      return;
+    }
   
-  this->AllDerivatives[0] = Psi[0];
+  AllDerivatives[0] = Psi[0];
 	
   Complex tmp;
   Complex slaterValue;
@@ -304,9 +304,7 @@ ComplexVector & PairedCFOnSphereWaveFunction::CalcAllDerivatives(ComplexVector A
 	}
       //AllDerivatives[s+1] *= 2.0/((double)N/2.0-1.0)*this->interpolation_factor;
     }
-  AllDerivatives *= Interpolation*AdditionalJastrow; // apply the same normalisation factor as in calculation of wave function.
-  return this->AllDerivatives;
-	
+  AllDerivatives *= Interpolation*AdditionalJastrow; // apply the same normalisation factor as in calculation of wave function.	
 }
 
 
