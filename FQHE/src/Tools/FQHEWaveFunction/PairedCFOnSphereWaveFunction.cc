@@ -65,12 +65,13 @@ PairedCFOnSphereWaveFunction::PairedCFOnSphereWaveFunction(int nbrParticles, int
 							   double MooreReadCoefficient, double * givenCFCoefficients,
 							   bool correctPrefactors, int jastrowPower, bool calcDeriv)
 {
+  cout << "PairedCFOnSphereWaveFunction created with nbrParticles="<<nbrParticles<<endl;
   this->NbrParticles = nbrParticles;
   this->NbrLandauLevels = nbrLandauLevels;
   this->NbrParameters = this->NbrLandauLevels+1; // inherited field
   this->AbsEffectiveFlux = abs(nbrEffectiveFlux);
   this->AddJastrowPower = (jastrowPower>=2?jastrowPower - 2:0);
-  this->Orbitals = new JainCFOnSphereOrbitals(nbrParticles, nbrLandauLevels, nbrEffectiveFlux,jastrowPower);
+  this->Orbitals = new JainCFOnSphereOrbitals(nbrParticles, nbrLandauLevels, nbrEffectiveFlux, jastrowPower);
   this->MooreReadCoefficient=MooreReadCoefficient;
   this->TrialParameters= new double [NbrParameters];
   for (int i=0; i<NbrLandauLevels; ++i) this->TrialParameters[i] = givenCFCoefficients[i];
@@ -80,10 +81,13 @@ PairedCFOnSphereWaveFunction::PairedCFOnSphereWaveFunction(int nbrParticles, int
   this->Flag.Initialize();
   this->Ji = new Complex[this->NbrParticles];
   
-  if(calcDeriv==true){
-  this->AllDerivatives.Resize(this->NbrLandauLevels+1);
-  this->M = new ComplexSkewSymmetricMatrix(this->NbrParticles);
-  }
+  if(calcDeriv==true)
+    {
+      this->AllDerivatives.Resize(this->NbrLandauLevels+1);
+      this->M = new ComplexSkewSymmetricMatrix(this->NbrParticles);
+    }
+  else
+    this->M = nullptr;
   
   this->gAlpha = new Complex*[this->NbrLandauLevels];
   for (int i=0; i< this->NbrLandauLevels; ++i)
@@ -106,7 +110,7 @@ PairedCFOnSphereWaveFunction::PairedCFOnSphereWaveFunction(int nbrParticles, int
   cout << "trial parameters in Paired:";
   for (int i=0; i<NbrParameters; ++i) cout <<" "<<TrialParameters[i];
   cout << endl;
-
+  cout << "PairedCFOnSphereWaveFunction end of constructor with nbrParticles="<<nbrParticles<<endl;
 }
 
 // copy constructor
@@ -132,9 +136,14 @@ PairedCFOnSphereWaveFunction::PairedCFOnSphereWaveFunction(const PairedCFOnSpher
   for (int i=0; i< this->NbrLandauLevels; ++i)
     gAlpha[i]= new Complex[NbrParticles*NbrParticles];
   this->AllDerivatives=function.AllDerivatives;
-  this->M = function.M;
 
-  
+  if(function.M != nullptr)
+    {
+      this->AllDerivatives.Resize(this->NbrLandauLevels+1);
+      this->M = new ComplexSkewSymmetricMatrix(this->NbrParticles);
+    }
+  else
+    this->M = nullptr;
 }
 
 // destructor
@@ -150,9 +159,8 @@ PairedCFOnSphereWaveFunction::~PairedCFOnSphereWaveFunction()
   for (int i=0; i< this->NbrLandauLevels; ++i) delete [] gAlpha[i];
   delete [] gAlpha;
   delete [] Ji;
-  if(M !=0 ){
-  delete M;
-  }
+  if(M != nullptr)
+    delete M;
   delete Slater;
 }
 
@@ -178,31 +186,31 @@ Complex PairedCFOnSphereWaveFunction::operator ()(RealVector& x)
 	      
   // initialize Slater determinant (or Pfaffian matrix)
   if(MooreReadCoefficient != 0.0){
-  for (int i=0;i<this->NbrParticles;++i)
-    {
-      for(int j=0;j<i;++j)
-	{
-	  tmp=0.0;
-	  for (int n=0; n<this->NbrLandauLevels; ++n)
-	    tmp+=this->TrialParameters[n]*this->gAlpha[n][i*this->NbrParticles+j];	    
+    for (int i=0;i<this->NbrParticles;++i)
+      {
+	for(int j=0;j<i;++j)
+	  {
+	    tmp=0.0;
+	    for (int n=0; n<this->NbrLandauLevels; ++n)
+	      tmp+=this->TrialParameters[n]*this->gAlpha[n][i*this->NbrParticles+j];	    
 	  
-	  Slater->SetMatrixElement(i,j, this->ElementNorm*this->Ji[i]*this->Ji[j]
-				   *(MooreReadCoefficient/Orbitals->JastrowFactorElement(i,j) + tmp));
-	}
-    }  
+	    Slater->SetMatrixElement(i,j, this->ElementNorm*this->Ji[i]*this->Ji[j]
+				     *(MooreReadCoefficient/Orbitals->JastrowFactorElement(i,j) + tmp));
+	  }
+      }  
   }
   else{
-	  for (int i=0;i<this->NbrParticles;++i)
-    {
-      for(int j=0;j<i;++j)
-	{
-	  tmp=0.0;
-	  for (int n=0; n<this->NbrLandauLevels; ++n)
-	    tmp+=this->TrialParameters[n]*this->gAlpha[n][i*this->NbrParticles+j];	    
+    for (int i=0;i<this->NbrParticles;++i)
+      {
+	for(int j=0;j<i;++j)
+	  {
+	    tmp=0.0;
+	    for (int n=0; n<this->NbrLandauLevels; ++n)
+	      tmp+=this->TrialParameters[n]*this->gAlpha[n][i*this->NbrParticles+j];	    
 	  
-	  Slater->SetMatrixElement(i,j, this->ElementNorm*this->Ji[i]*this->Ji[j] * tmp);
-	}
-    }  
+	    Slater->SetMatrixElement(i,j, this->ElementNorm*this->Ji[i]*this->Ji[j] * tmp);
+	  }
+      }  
   }
   //cout << *Slater << endl;
   return Slater->Pfaffian()*Interpolation*AdditionalJastrow;
@@ -216,8 +224,10 @@ Complex PairedCFOnSphereWaveFunction::operator ()(RealVector& x)
 //      ordering: u[i] = uv [2*i], v[i] = uv [2*i+1]
 // return value = function value at (uv)
 Complex PairedCFOnSphereWaveFunction::CalculateFromSpinorVariables(ComplexVector& uv)
- {
+{
+  cout << "in PairedCFOnSphereWaveFunction::CalculateFromSpinorVariables uv.length="<<uv.GetVectorDimension()<<endl;
   this->OrbitalValues = Orbitals->CalculateFromSpinorVariables(uv);
+  cout << "in PairedCFOnSphereWaveFunction::CalculateFromSpinorVariables after next step uv.length="<<uv.GetVectorDimension()<<endl;
   this->EvaluateTables();
   Complex tmp;
 	      
