@@ -43,11 +43,12 @@
 #include "GeneralTools/GarbageFlag.h"
 
 #include <iostream>
-
+#include <complex>
 
 using std::ostream;
 
 
+class ComplexLowerTriangularMatrix;
 class ComplexUpperTriangularMatrix;
 
 
@@ -61,6 +62,7 @@ class ComplexMatrix : public Matrix
   friend class RealVector;
   friend class ComplexVector;
   friend class RealTriDiagonalSymmetricMatrix;
+  friend class RealDiagonalMatrix;
   friend class SingleParticle;
 
  protected:
@@ -176,13 +178,13 @@ class ComplexMatrix : public Matrix
   // j = column position
   // x = reference on the variable where to store the requested matrix element
   void GetMatrixElement(int i, int j, Complex& x) const;
-  
+
   // get a matrix element
   //
   // i = line position
   // j = column position
   // x = reference on the variable where to store the requested matrix element -- get as standard complex
-  void GetMatrixElement(int i, int j,complex<double> &x) const;
+  void GetMatrixElement(int i, int j, std::complex<double> &x) const;
 
   // add a value to a matrix element
   //
@@ -199,13 +201,17 @@ class ComplexMatrix : public Matrix
   void AddToMatrixElement(int i, int j, const Complex& x);
 
   // add a linear combination of another complex matrix
+  //
   // x = prefactor for added terms
   // M = added matrix
+  // return value = reference on the current matrix
   ComplexMatrix& AddLinearCombination(double x, const ComplexMatrix &M);
 
   // add a linear combination of another complex matrix
+  //
   // x = prefactor for added terms
   // M = added matrix
+  // return value = reference on the current matrix
   ComplexMatrix& AddLinearCombination(double x, const HermitianMatrix &M);
 
   // add a linear combination of another complex matrix
@@ -223,6 +229,8 @@ class ComplexMatrix : public Matrix
   // i = column position
   // return value = column reference 
   ComplexVector& operator [] (int i);
+  Complex & GetMatrixElement(int i, int j);
+
 
   // Resize matrix
   //
@@ -305,12 +313,54 @@ class ComplexMatrix : public Matrix
   // return value = product of the two matrices
   friend ComplexMatrix operator * (const ComplexMatrix& M1, const ComplexMatrix& M2);
 
+  // multiply two matrices
+  //
+  // M1 = first matrix
+  // M2 = matrix to multiply to M1
+  // return value = product of the two matrices
+  friend ComplexMatrix operator * (const ComplexMatrix  & M1, const RealDiagonalMatrix & M2);
+
+  // multiply two matrices
+  //
+  // M1 = first matrix
+  // M2 = matrix to multiply to M1
+  // return value = product of the two matrices
+  friend ComplexMatrix operator * (const  RealDiagonalMatrix & M1, const ComplexMatrix & M2);
+
+  // multiply two matrices
+  //
+  // M1 = first matrix
+  // M2 = matrix to multiply to M1
+  // return value = product of the two matrices
+  friend ComplexMatrix operator * (const ComplexMatrix  & M1, const ComplexDiagonalMatrix & M2);
+
+  // multiply two matrices
+  //
+  // M1 = first matrix
+  // M2 = matrix to multiply to M1
+  // return value = product of the two matrices
+  friend ComplexMatrix operator * (const  ComplexDiagonalMatrix & M1, const ComplexMatrix & M2);
+  
   // multiply a complex matrix with a complex upper triangular matrix
   //
   // m1 = complex matrix
   // m2 = complex upper triangular matrix
   // return value = product result
-  friend ComplexMatrix operator * (ComplexMatrix& m1, const ComplexUpperTriangularMatrix& m2);
+  friend ComplexMatrix operator * (ComplexMatrix& m1, ComplexUpperTriangularMatrix& m2);
+
+  // multiply a complex lower triangular matrix with a complex upper triangular matrix
+  //
+  // m1 = complex lower triangular matrix
+  // m2 = complex upper triangular matrix
+  // return value = product result
+  friend ComplexMatrix operator * (ComplexLowerTriangularMatrix& m1, ComplexUpperTriangularMatrix& m2);
+
+  // multiply a complex upper triangular matrix with a complex lower triangular matrix
+  //
+  // m1 = complex upper triangular matrix
+  // m2 = complex lower triangular matrix
+  // return value = product result
+  friend ComplexMatrix operator * (ComplexUpperTriangularMatrix& m1, const ComplexLowerTriangularMatrix& m2);
 
   // multiply a matrix by a real number (right multiplication)
   //
@@ -332,6 +382,12 @@ class ComplexMatrix : public Matrix
   // return value = reference on current matrix
   ComplexMatrix& Multiply (const ComplexMatrix& M);
 
+  // multiply a matrix to the right by another matrix without using temporary matrix
+  //
+  // M = matrix used as multiplicator
+  // return value = reference on current matrix
+  ComplexMatrix& Multiply (const RealMatrix& M);
+
   // multiply a matrix to the right by another matrix without using temporary matrix and in a given range of indices
   // beware the matrix is not resized after multiplication in order the operation to be thread safe
   //
@@ -341,12 +397,35 @@ class ComplexMatrix : public Matrix
   // return value = reference on current matrix
   ComplexMatrix& Multiply (const ComplexMatrix& M, int startLine, int nbrLine);
 
+  // multiply a matrix to the right by another matrix without using temporary matrix and in a given range of indices
+  // beware the matrix is not resized after multiplication in order the operation to be thread safe
+  //
+  // M = matrix used as multiplicator
+  // startLine = starting line in destination matrix
+  // nbrLine = number of lines to multiply
+  // return value = reference on current matrix
+  ComplexMatrix& Multiply (const RealMatrix& M, int startLine, int nbrLine);
+
+  // multiply two matrices, taking the hermitian conjugate of the left nmatrix first (i.e. M1^+ M2)
+  //
+  // M1 = first matrix
+  // M2 = matrix to multiply to M1
+  // return value = product of the two matrices
+  friend ComplexMatrix HermitianMultiply (const ComplexMatrix& M1, const ComplexMatrix& M2);
+
   // divide a matrix by a real number (right multiplication)
   //
   // M = source matrix
   // x = real number to use
   // return value = division result
   friend ComplexMatrix operator / (const ComplexMatrix& M, double x);
+
+  // divide a matrix by a real diagonal matrix (all entries must be non zero)
+  //
+  // M = source matrix
+  // x = real number to use
+  // return value = division result
+  friend ComplexMatrix operator / (const ComplexMatrix& M1, const RealDiagonalMatrix& M2);
 
   // add another complex matrices
   //
@@ -390,6 +469,18 @@ class ComplexMatrix : public Matrix
   // return value = reference on current matrix
   ComplexMatrix& operator /= (double x);
 
+  // multiply a matrix by a real number
+  //
+  // x = real number to use
+  // return value = reference on current matrix
+  ComplexMatrix& operator *= (const Complex& x);
+
+  // divide a matrix by a real number
+  //
+  // x = real number to use
+  // return value = reference on current matrix
+  ComplexMatrix& operator /= (const Complex& x);
+
   // normalize matrix column vectors
   //
   // return value = reference on current matrix
@@ -426,10 +517,41 @@ class ComplexMatrix : public Matrix
   // return value = reference on the current matrix
   ComplexMatrix& ComplexConjugate ();
 
+  // discard the columns that are strictly zero
+  //
+  void RemoveZeroColumns();
+
+  // discard the rows that are strictly zero
+  //
+  void RemoveZeroRows();
+
   // compute the number of non-zero matrix elements (zero having strictly zero square norm)
   //
   // return value = number of non-zero matrix elements
-  long ComputeNbrNonZeroMatrixElements();
+  virtual long ComputeNbrNonZeroMatrixElements();
+
+  // compute the Frobenius norm of the current matrix 
+  //
+  // return value = value of the norm
+  double FrobeniusNorm();
+
+  // compute the Frobenius scalar product of two matrices
+  //
+  // return value = value of the scalar product
+  friend Complex FrobeniusScalarProduct (ComplexMatrix & matrixA, ComplexMatrix & matrixB);
+
+  // apply a sequence of row permutations
+  //
+  // permutations = array that list all the permutations. Each permutation is given at a pair corresponding to an index i and the i-th entry in the array (i.e. i <-> permutations[i])
+  //                The sequence is performed from the latest entry of permutations to the first one
+  // nbrPermutations = number of permutations to apply
+  void ApplyRowPermutations(int* permutations, int nbrPermutations);
+
+  // check if a complex matrix is hermitian
+  //
+  // error = maximum relative error allowed
+  // return value = true if the matrix is hermitian
+  bool TestHermitian(double error = MACHINE_PRECISION);
 
   // evaluate the real part of the matrix trace
   //
@@ -478,6 +600,22 @@ class ComplexMatrix : public Matrix
   // changeBitSign = reference on array with -1 if the changed bit is from 1 to 0, +1 either
   // minor = flag that indicated if precalculation will be used for minor development
   void EvaluateFastPermanentPrecalculationArray(int*& changeBit, int*& changeBitSign, bool minor = false);
+
+  // compute the LU decompostion of the matrix 
+  // 
+  // lowerMatrix = reference on the matrix where the lower triangular matrix will be stored
+  // upperMatrix = reference on the matrix where the upper triangular matrix will be stored
+  // return value = array that  describe the additional row permutation
+  int* LUDecomposition(ComplexLowerTriangularMatrix& lowerMatrix, ComplexUpperTriangularMatrix& upperMatrix);
+
+  // compute the invert of a matrix from its PLU decomposition
+  // 
+  // lowerMatrix = reference on the matrix where the lower triangular matrix
+  // upperMatrix = reference on the matrix where the upper triangular matrix
+  // permutations = array that list all the permutations defining P. Each permutation is given at a pair corresponding to an index i and 
+  //                the i-th entry in the array (i.e. i <-> permutations[i]). The sequence is performed from the latest entry of permutations to the first one
+  // return value = inverted matrix
+  friend ComplexMatrix InvertMatrixFromLUDecomposition(ComplexLowerTriangularMatrix& lowerMatrix, ComplexUpperTriangularMatrix& upperMatrix, int* permutations);
 
   // build a random unitary matrix
   //
@@ -590,8 +728,6 @@ class ComplexMatrix : public Matrix
   // return value = pointer on the diagonal elements of D
   double* SingularValueDecomposition();
 
-#ifdef __LAPACK__
-
   // calculate a determinant using the LAPACK library (conserving current matrix)
   //
   Complex LapackDeterminant ();
@@ -611,6 +747,14 @@ class ComplexMatrix : public Matrix
   // return value = reference on real matrix consisting of eigenvalues
   ComplexDiagonalMatrix& LapackDiagonalize (ComplexDiagonalMatrix& M, ComplexMatrix& Q, bool leftFlag = false);
 
+  // Diagonalize a complex skew symmetric matrix and evaluate transformation matrix using the LAPACK library, truncating to single precision (modifying current matrix)
+  //
+  // M = reference on real diagonal matrix of eigenvalues
+  // Q = matrix where transformation matrix has to be stored
+  // leftFlag = compute left eigenvalues/eigenvectors instead of right eigenvalues/eigenvectors
+  // return value = reference on real matrix consisting of eigenvalues
+  ComplexDiagonalMatrix& LapackDiagonalizeSinglePrecision (ComplexDiagonalMatrix& M, ComplexMatrix& Q, bool leftFlag);
+
   // reduce a complex matrix to its Schur form S
   //
   // M = reference on real diagonal matrix of eigenvalues
@@ -619,7 +763,31 @@ class ComplexMatrix : public Matrix
   // return value = reference on real matrix consisting of eigenvalues
   ComplexDiagonalMatrix& LapackSchurForm (ComplexDiagonalMatrix& M, ComplexMatrix& Q, ComplexMatrix &S);
 
+  // compute the LU decompostion of the matrix using the LAPACK library (conserving current matrix)
+  // 
+  // lowerMatrix = reference on the matrix where the lower triangular matrix will be stored
+  // upperMatrix = reference on the matrix where the upper triangular matrix will be stored
+  // return value = array that  describe the additional row permutation
+  int* LapackLUDecomposition(ComplexLowerTriangularMatrix& lowerMatrix, ComplexUpperTriangularMatrix& upperMatrix);
+
+  // perform QR decomposition of the current matrix
+  //
+  // 
+  // Q = matrix where unitary matrix has to be stored
+  // R = matrix where upper triangular matrix has to be stored
+  // return value = reference on real matrix consisting of eigenvalues
+  void QRDecompositionFromLapack (ComplexMatrix & Q, ComplexMatrix & R);
+  
+
+
+  // invert the current matrix using the LAPACK library
+  // 
+  void LapackInvert();
+ 
+
  private:
+
+#ifdef __LAPACK__
 
   int LapackWorkAreaDimension;
   doublecomplex *LapackMatrix;
@@ -640,6 +808,20 @@ inline ComplexVector& ComplexMatrix::operator [] (int i)
 {
   return this->Columns[i];
 }
+
+
+// return refernce on real part of a given matrix element
+//
+// i = line position
+// j = column position
+// return value = reference on real part
+
+inline Complex & ComplexMatrix::GetMatrixElement(int i, int j)
+{
+  return this->Columns[j][i];
+}
+
+
 
 // get a matrix element (real part if complex)
 //
@@ -669,10 +851,10 @@ inline void ComplexMatrix::GetMatrixElement(int i, int j, Complex& x) const
 // j = column position
 // x = reference on the variable where to store the requested matrix element
 
-inline void ComplexMatrix::GetMatrixElement(int i, int j, complex<double>& x) const
+inline void ComplexMatrix::GetMatrixElement(int i, int j, std::complex<double>& x) const
 {
-  x.real = this->Columns[j][i].Re;
-  x.imag = this->Columns[j][i].Im;
+  x.real(this->Columns[j][i].Re);
+  x.imag(this->Columns[j][i].Im);
 }
 
 #endif
