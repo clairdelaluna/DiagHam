@@ -154,6 +154,8 @@ class PairedCFOnSphereWaveFunction: public Abstract1DComplexTrialFunctionOnSpher
   // normalize the wave-function to one for the given particle positions
   // s = scale factor to apply to each element
   void ScaleElementNorm(double s);
+  // get the norm applied to each entry of the slater determinant
+  double GetElementNorm(){return this->ElementNorm;}
   // normalize the wave-function to one for the given particle positions
   // x = point where the function has to be evaluated
   void AdaptNorm(RealVector& x);

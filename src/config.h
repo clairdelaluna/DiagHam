@@ -27,8 +27,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef CONFIG_H_DiagHam
+#define CONFIG_H_DiagHam
 
 
 #include "config_ac.h"
