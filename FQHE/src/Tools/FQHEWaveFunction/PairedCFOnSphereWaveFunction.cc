@@ -66,6 +66,23 @@ PairedCFOnSphereWaveFunction::PairedCFOnSphereWaveFunction(int nbrParticles, int
 							   bool correctPrefactors, int jastrowPower, bool calcDeriv)
 {
   cout << "PairedCFOnSphereWaveFunction created with nbrParticles="<<nbrParticles<<endl;
+
+
+  cout << "SizeOf(PairedCFOnSphereWaveFunction) in PairedCFOnSphereWaveFunction is "<<sizeof(PairedCFOnSphereWaveFunction)<<endl;
+  cout << "SizeOf(Abstract1DComplexTrialFunctionOnSphere) in PairedCFOnSphereWaveFunction is "<<sizeof(Abstract1DComplexTrialFunctionOnSphere)<<endl;
+
+  cout << "SizeOf(JainCFOnSphereOrbitals) in PairedCFOnSphereWaveFunction is "<<sizeof(JainCFOnSphereOrbitals)<<endl;
+
+  cout << "SizeOf(GarbageFlag) in PairedCFOnSphereWaveFunction is "<<sizeof(GarbageFlag)<<endl;
+
+  cout << "SizeOf(ComplexMatrix) in PairedCFOnSphereWaveFunction is "<<sizeof(ComplexMatrix)<<endl;
+
+#ifdef __LAPACK__
+  cout << "precompiler flag __LAPACK__ is defined" <<endl;
+#else
+  cout << "precompiler flag __LAPACK__ is NOT defined" <<endl;
+#endif
+  
   this->NbrParticles = nbrParticles;
   this->NbrLandauLevels = nbrLandauLevels;
   this->NbrParameters = this->NbrLandauLevels+1; // inherited field
@@ -107,7 +124,7 @@ PairedCFOnSphereWaveFunction::PairedCFOnSphereWaveFunction(int nbrParticles, int
   cout << "trial parameters in Paired:";
   for (int i=0; i<NbrParameters; ++i) cout <<" "<<TrialParameters[i];
   cout << endl;
-  cout << "PairedCFOnSphereWaveFunction end of constructor with nbrParticles="<<nbrParticles<<endl;
+  //cout << "PairedCFOnSphereWaveFunction end of constructor with nbrParticles="<<nbrParticles<<endl;
 }
 
 // copy constructor
@@ -206,7 +223,7 @@ Complex PairedCFOnSphereWaveFunction::operator ()(RealVector& x)
       }  
   }
   //cout << *Slater << endl;
-  return Slater->Pfaffian()*Interpolation*AdditionalJastrow;
+  return Slater->Pfaffian()*this->Interpolation*AdditionalJastrow;
 }
 
 
@@ -218,14 +235,14 @@ Complex PairedCFOnSphereWaveFunction::operator ()(RealVector& x)
 // return value = function value at (uv)
 Complex PairedCFOnSphereWaveFunction::CalculateFromSpinorVariables(ComplexVector& uv)
 {
-  cout << "in PairedCFOnSphereWaveFunction::CalculateFromSpinorVariables uv.length="<<uv.GetVectorDimension()<<endl;
+  //cout << "in PairedCFOnSphereWaveFunction::CalculateFromSpinorVariables uv.length="<<uv.GetVectorDimension()<<endl;
   this->OrbitalValues = Orbitals->CalculateFromSpinorVariables(uv);
-  cout << "in PairedCFOnSphereWaveFunction::CalculateFromSpinorVariables after next step uv.length="<<uv.GetVectorDimension()<<endl;
+  //cout << "in PairedCFOnSphereWaveFunction::CalculateFromSpinorVariables after next step uv.length="<<uv.GetVectorDimension()<<endl;
   this->EvaluateTables();
   Complex tmp;
 	      
   // initialize Slater determinant (or Pfaffian matrix)
-  if(MooreReadCoefficient != 0.0){
+  if (MooreReadCoefficient != 0.0){
   for (int i=0;i<this->NbrParticles;++i)
     {
       for(int j=0;j<i;++j)
@@ -253,7 +270,7 @@ Complex PairedCFOnSphereWaveFunction::CalculateFromSpinorVariables(ComplexVector
     }
 	}
   //cout << *Slater << endl;
-  return Slater->Pfaffian()*Interpolation*AdditionalJastrow;
+  return Slater->Pfaffian()*this->Interpolation*AdditionalJastrow;
 } 
 
 
@@ -304,7 +321,7 @@ void PairedCFOnSphereWaveFunction::CalcAllDerivatives(ComplexVector &AllDerivati
 	}
       //AllDerivatives[s+1] *= 2.0/((double)N/2.0-1.0)*this->interpolation_factor;
     }
-  AllDerivatives *= Interpolation*AdditionalJastrow; // apply the same normalisation factor as in calculation of wave function.	
+  AllDerivatives *= this->Interpolation*AdditionalJastrow; // apply the same normalisation factor as in calculation of wave function.	
 }
 
 
@@ -328,7 +345,7 @@ Complex PairedCFOnSphereWaveFunction::GetForOtherParameters( double *coefficient
 				   *(coefficients[this->NbrLandauLevels]/Orbitals->JastrowFactorElement(i,j) + tmp));
 	}
     }  
-  return Slater->Pfaffian()*Interpolation*AdditionalJastrow;
+  return Slater->Pfaffian()*this->Interpolation*AdditionalJastrow;
 }
 
 // do many evaluations, storing the result in the vector results given in the call
@@ -365,7 +382,7 @@ void PairedCFOnSphereWaveFunction::GetForManyParametersComplex(ComplexVector &re
 
 void PairedCFOnSphereWaveFunction::GetForManyParameters(ComplexVector &results, RealVector& x, double **coefficients)
 {
- this->OrbitalValues = (*Orbitals)(x);
+  this->OrbitalValues = (*Orbitals)(x);
   this->EvaluateTables();
   Complex tmp;
   int numParamSets=results.GetVectorDimension();
@@ -388,7 +405,7 @@ void PairedCFOnSphereWaveFunction::GetForManyParameters(ComplexVector &results, 
       tmp=Slater->Pfaffian()*this->Interpolation*AdditionalJastrow;
       results.Re(s)=Real(tmp);
       results.Im(s)=Imag(tmp);
-    }  
+    }
 }
 
 
@@ -489,7 +506,7 @@ void PairedCFOnSphereWaveFunction::EvaluateTables()
   Complex tmp;
   // evaluate single particle Jastrow factors
   this->Interpolation=1.0;
-  if (Orbitals->TestCriticality(Interpolation) == 0)
+  if (Orbitals->TestCriticality(this->Interpolation) == 0)
     {
       for (i=0;i<this->NbrParticles;i++)
 	{
@@ -507,6 +524,8 @@ void PairedCFOnSphereWaveFunction::EvaluateTables()
 	  for(j=i+1;j<NbrParticles;j++) Ji[i] *= ((Orbitals->SpinorU(i) * Orbitals->SpinorV(j)) - (Orbitals->SpinorU(j) * Orbitals->SpinorV(i)));
 	}
     }
+  //cout << "PairedCFOnSphereWaveFunction: InterpolationFactor="<<this->Interpolation<<endl;
+
 
   // evaluate sums over orbitals m for each LL:
   for (i=0;i<this->NbrParticles;i++)

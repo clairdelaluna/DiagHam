@@ -127,6 +127,8 @@ JainCFOnSphereOrbitals::JainCFOnSphereOrbitals(int nbrParticles, int nbrLandauLe
   OrbitalVector = new Complex[this->NbrParticles];
   OrbitalVector2 = new Complex[this->NbrParticles];
   this->EvaluateDerivativeStructure();
+  cout << "JastrowPower = "<<this->JastrowPower<<endl;
+  cout << "CriticalDistance="<<this->CriticalDistance<<endl;
 }
 
 // copy constructor
@@ -272,6 +274,8 @@ ComplexMatrix& JainCFOnSphereOrbitals::CalculateFromSpinorVariables(ComplexVecto
 {
   int Index = 0;
   int MaxMomentum = this->TwiceS;
+  //cout <<"in JainCFOnSphereOrbitals::CalculateFromSpinorVariables: uv.Length="<<uv.GetVectorDimension()<<endl;
+  //cout <<"JainCFOnSphereOrbitals::CalculateFromSpinorVariables: NbrParticles="<<this->NbrParticles<<endl;
   
   // Import from spinors
 
@@ -283,7 +287,6 @@ ComplexMatrix& JainCFOnSphereOrbitals::CalculateFromSpinorVariables(ComplexVecto
       this->SpinorVCoordinates[i].Im = uv.Im(2*i+1);
       //cout << "U["<<i<<"]="<<SpinorUCoordinates[i]<<", "<< "V["<<i<<"]="<<SpinorVCoordinates[i]<<endl;
     }
-  
   this->EvaluateTables();
   for (int j = 0; j < this->NbrLandauLevels; ++j)
     {
@@ -337,6 +340,7 @@ Complex JainCFOnSphereOrbitals::EvaluateTables(bool derivativeFlag)
 	    {
 	      this->Criticality++;
 	      TmpD=Norm(Tmp);
+
 	      Tmp*=this->CriticalDistance/TmpD;
 	      this->InterpolationFactor *= pow(this->CriticalDistance/TmpD,(double)2.0*this->JastrowPower-1.0);      
 	    }
@@ -346,7 +350,9 @@ Complex JainCFOnSphereOrbitals::EvaluateTables(bool derivativeFlag)
 	  JastrowFactor *= Tmp;
 	}
     }
-  
+
+  //cout << "JainCFOrbitals: InterpolationFactor="<<InterpolationFactor<<endl;
+    
   Tmp = JastrowFactor;
   for (int i = 1; i < this->ActualJastrowPower; ++i)
     {
@@ -538,6 +544,7 @@ void JainCFOnSphereOrbitals::EvaluateSumPrefactors()
 	      Coef.SetToOne();	      
 	      if (TwiceQPrime + i + 1 <= TwiceBigQ +1)
 		// = (TwiceBigQ + 1)! / (TwiceQPrime + i + 1)!
+
 		Coef.PartialFactorialMultiply( TwiceQPrime + i + 2 , TwiceBigQ +1 );  
 	      else
 		// = (TwiceBigQ + 1)! / (TwiceQPrime + i + 1)!

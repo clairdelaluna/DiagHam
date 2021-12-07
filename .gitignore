@@ -1,3 +1,7 @@
+autom4te.cache/output.1
+autom4te.cache/requests
+autom4te.cache/traces.0
+autom4te.cache/traces.1
 ./QuantumDots/Makefile.in
 ./QuantumDots/src/Tools/Analysis/Makefile.in
 ./QuantumDots/src/Tools/Spectra/Makefile.in
@@ -92,3 +96,6 @@
 ./src/DMRGAlgorithm/Makefile.in
 ./src/Operator/Makefile.in
 ./src/GeneralTools/Makefile.in
+aclocal.m4
+configure
+src/config_ac.h.in
