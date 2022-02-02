@@ -83,6 +83,10 @@ class Abstract1DComplexTrialFunctionOnSphere : public Abstract1DComplexTrialFunc
   // format for passing parameters as [nbrSet][nbrParameter],
   virtual void GetForManyParameters(ComplexVector &results, RealVector& x, double **coefficients) = 0;
   virtual void GetForManyParametersComplex(ComplexVector &results, ComplexVector& uv, double** coefficients){std::cout<<"dummy virtual complex fn";}
+
+  // calculate the derivative with respect to all variational parameters - needs to be called subsequent to an evaluation of wave function itself (and provides output for the same variables)
+  virtual void GetAllDerivatives(ComplexVector &results){std::cout<<"dummy virtual complex fn - GetAllDerivatives";}
+  
   // access internal values of parameters
   virtual double *GetTrialParameters(){return this->TrialParameters;}
 

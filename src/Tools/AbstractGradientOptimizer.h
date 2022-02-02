@@ -3,12 +3,12 @@
 //                                                                            //
 //                            DiagHam  version 0.01                           //
 //                                                                            //
-//                  Copyright (C) 2001-2008 Gunnar Moeller                    //
+//              Copyright (C) 2001-2021 Nicolas Regnault & co                 //
 //                                                                            //
 //                                                                            //
-//      class for a basic Monte Carlo algorith for particles on a sphere      //
+//                    class of abstract gradient optimisers                   //
 //                                                                            //
-//                        last modification : 23/01/2008                      //
+//                        last modification : 10/12/2021                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -28,64 +28,49 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef ABSTRACTOBSERVABLE_H
-#define ABSTRACTOBSERVABLE_H
+#ifndef ABSTRACTGRADIENTOPTIMIZER_H
+#define ABSTRACTGRADIENTOPTIMIZER_H
+
 
 #include "config.h"
-
+#include "MathTools/Complex.h"
+#include "Abstract1DComplexTrialFunction.h"
+#include "Vector/RealVector.h"
+#include "Vector/ComplexVector.h"
 #include <iostream>
 
-class AbstractParticleCollection;
+class RealVector;
 
-class AbstractObservable
+
+class AbstractOptimizerData
 {
- protected:
-  unsigned Type;
+}
+
+
+class AbstractGradientOptimizer
+{
   
  public:
-  
-  enum Properties{
-    RealObservableT = 0x1u,
-    ComplexObservableT = 0x2u,
-    VectorValued = 0x4u
-  };
-  
-  // destructor
-  virtual ~AbstractObservable();
 
-  // call to make an observation
-  // weight = relative weight of this sample
-  virtual void RecordValue(double weight) {return this->RecordValues(&weight, NULL);}
-
-  // call to make multiple weighted observations
-  // realweights = relative weights for the sample
-  // complexweights = relative phases and weights for complex-valued samples
-  virtual void RecordValues(double *realweights, Complex *complexweights) = 0;
-
-  // print legend to the given stream
-  // all = flag indicating whether to print all, or shortened information
-  virtual void PrintLegend(std::ostream &output, bool all = false) = 0;
-
-  // print status to the given stream
-  // all = flag indicating whether to print all, or shortened information
-  virtual void PrintStatus(std::ostream &output, bool all = false) = 0;
-
-  // request whether observable should be printed
+  // virtual destructor
   //
-  virtual bool IncludeInPrint();
+  virtual ~AbstractGradientOptimizer();
 
-  // set print status
+  // clone function 
   //
-  virtual void IncludeInPrint(bool newStatus);
+  // return value = clone of the function 
+  virtual AbstractGradientOptimizer* Clone () = 0;
 
-  // print formatted data suitable for plotting
-  // ouput = the target stream
-  virtual void WriteDataFile(std::ostream &output) = 0;
-
-  // set particle collection that the observable operates on
-  // system = particle collection
-  virtual void SetParticleCollection(AbstractParticleCollection *system) = 0;
   
+  // set new values of the trial coefficients (keeping the initial number of parameters)
+  virtual void SetTrialParameters(RealVector& coefficients, AbstractOptimizerData* OptimizerData) = 0;
+
+  // GetNextTrialParameters:
+  // NewTrialParameters - vector returning new trial parameters
+  virtual void GetNextTrialParameters(RealVector& NewTrialParameters, RealVector& currentTrialParameters, AbstractOptimizerData* OptimizerData) = 0;
+
+  virtual void GetNextTrialParameters(ComplexVector& NewTrialParameters, ComplexVector& currentTrialParameters, AbstractOptimizerData* OptimizerData) = 0;
+    
 };
 
 #endif

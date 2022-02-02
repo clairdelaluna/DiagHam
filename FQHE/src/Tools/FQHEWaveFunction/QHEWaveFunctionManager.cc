@@ -109,7 +109,7 @@ void QHEWaveFunctionManager::AddOptionGroup(OptionManager* manager)
     {
       // PairedCFOptions:
       (*WaveFunctionGroup) += new SingleDoubleOption  ('\n', "MR-coeff", "coefficient for Moore-Read contribution (pairedcf only)",1.0);
-      (*WaveFunctionGroup) += new MultipleDoubleOption  ('\n', "pair-coeff", "sequence of pairing coefficients (pairedcf only)",'+');
+      (*WaveFunctionGroup) += new MultipleDoubleInternalOption  ('\n', "pair-coeff", "sequence of pairing coefficients (pairedcf only)",'+');
       (*WaveFunctionGroup) += new BooleanOption  ('\n', "pair-compatibility", "adopt old conventions for normalisation (pairedcf only)");
       (*WaveFunctionGroup) += new BooleanOption  ('\n', "fermion-state", "generate a fermionic wavefunction (RR)");
       (*WaveFunctionGroup) += new SingleIntegerOption  ('\n', "CF-levels", "number of CF levels to fill (><0) (SLBS)",-2);

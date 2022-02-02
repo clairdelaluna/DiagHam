@@ -274,9 +274,58 @@ Complex PairedCFOnSphereWaveFunction::CalculateFromSpinorVariables(ComplexVector
 } 
 
 
+
+// calculation of all derivatives (common interface)
+// AllDerivatives = will be filled with output for derivatives
+void PairedCFOnSphereWaveFunction::GetAllDerivatives(ComplexVector &AllDerivatives)
+{
+
+  if (this->M==nullptr)
+    {
+      std::cerr << "Error - PairedCFOnSphereWaveFunction not set up to calculate derivatives"<<std::endl;
+      return;
+    }
+  	
+  Complex tmp;
+  Complex slaterValue;
+  for (int s=0; s<this->NbrLandauLevels; ++s) // number through derivatives d/dA_s
+    {
+      AllDerivatives[s]=0.0;
+      for (int PairI=0; PairI<this->NbrParticles; ++PairI)
+	{
+	  for (int PairJ=0; PairJ<PairI; ++PairJ)
+	    {	      	  
+	      for (int i=0;i<this->NbrParticles;++i)
+		{
+		  for(int j=0;j<i;++j)
+		    {
+		      if ((i==PairI)&&(j==PairJ))
+			{
+			  this->M->SetMatrixElement(i,j,this->ElementNorm*Ji[i]*Ji[j]*gAlpha[s][i*this->NbrParticles+j]);
+			}
+		      else
+			{
+			  tmp=0.0; 
+			  for (int n=0; n<this->NbrLandauLevels; ++n)
+			    tmp+=TrialParameters[n]*gAlpha[n][i*this->NbrParticles+j];
+                          Slater->GetMatrixElement(i,j,slaterValue); 
+			  this->M->SetMatrixElement(i,j,(this->ElementNorm*Ji[i]*Ji[j]*(slaterValue + tmp)));
+			}
+		    }
+		}
+	      AllDerivatives[s] += M->Pfaffian();
+	    }
+	}
+    }
+  AllDerivatives *= this->Interpolation*AdditionalJastrow; // apply the same normalisation factor as in calculation of wave function.	
+}
+
+
+
+
 // help text needed: this call evaluates the derivates at the coordinates defined by the last call to operator () or CalculateFromSpinorVariables()
 // writes output to the given vector "AllDerivatives" with the vector of derivatives
-
+// (interface with old Monte-Carlo code - additionally provides wave function as the 0-th entry in the return vector)
 void PairedCFOnSphereWaveFunction::CalcAllDerivatives(ComplexVector &AllDerivatives, ComplexVector &Psi)
 {
 
@@ -313,7 +362,7 @@ void PairedCFOnSphereWaveFunction::CalcAllDerivatives(ComplexVector &AllDerivati
                           Slater->GetMatrixElement(i,j,slaterValue); 
 			  this->M->SetMatrixElement(i,j,(this->ElementNorm*Ji[i]*Ji[j]*(slaterValue + tmp)));
 			}
-		     		    }
+		    }
 		  // M[i][i]=0.0; // not required - the matrix is defined to be antisymmetric!
 		}
 	      AllDerivatives[s+1] += M->Pfaffian();

@@ -204,6 +204,7 @@ void SimpleMonteCarloAlgorithm::Simulate(ostream &Output)
 	  WaveFctValue = (*(this->WaveFunction))(System->GetPositions());
 	  //cout << "WaveFctValue=" <<WaveFctValue<<endl;	  
 	  Weight = SqrNorm(WaveFctValue)/SamplingAmplitude;
+	  
 	  //cout << "w="<<Weight<<" ratio="<<WaveFctValue/SamplingFctValue<<endl;
 	  for (int i=0; i<NbrObservables; ++i)
 	    if (s%Frequencies[i]==0) Observables[i]->RecordValue(Weight);

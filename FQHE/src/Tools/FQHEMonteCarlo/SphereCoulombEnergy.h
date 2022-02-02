@@ -36,6 +36,7 @@
 #include "AbstractObservable.h"
 #include "ParticleOnSphereCollection.h"
 #include "MCObservables/WeightedRealObservable.h"
+#include "MCObservables/WeightedComplexObservable.h"
 
 class SphereCoulombEnergy : public AbstractObservable
 {
@@ -62,8 +63,11 @@ class SphereCoulombEnergy : public AbstractObservable
   Complex *SpinorUCoordinates;
   Complex *SpinorVCoordinates;
 
-  // core observable
-  WeightedRealObservable *Values;
+  // observables for real weights
+  WeightedRealObservable **RealValues;
+
+  // observables for complex weights
+  WeightedComplexObservable **ComplexValues;
   
  public:
 
@@ -73,7 +77,7 @@ class SphereCoulombEnergy : public AbstractObservable
   // constructor
   // nbrFlux = Number of Flux piercing sphere
   // width = simple model of finite layer width for 1/sqrt(w^2+r^2)
-  SphereCoulombEnergy(int nbrFlux, double width=0.0);
+  SphereCoulombEnergy(int nbrFlux, double width=0.0, int nbrRealObservables=1, int nbrComplexObservables=0);
 
 
   // destructor
@@ -81,6 +85,20 @@ class SphereCoulombEnergy : public AbstractObservable
 
   // call to make an observation
   virtual void RecordValue(double weight);
+
+  // call to make an observation with multiple weights (used in optimisation)
+  void RecordValue(double *realweights, Complex *complexweights);
+
+
+  // access the data averaged over the run:
+  // for real data
+  void GetRealWeightedEnergies(RealVector &energies);
+  // for real errors
+  void GetRealWeightedErrors(RealVector &errors);
+  // for complex data
+  void GetComplexWeightedEnergies(ComplexVector &energies);
+  // for real errors
+  void GetComplexWeightedErrors(RealVector &errors);
 
   // print legend to the given stream
   // all = flag indicating whether to print all, or shortened information
@@ -101,6 +119,16 @@ class SphereCoulombEnergy : public AbstractObservable
   // additional routines for energy observables:
   // returns the total background energy
   double GetTotalBackgroundEnergy();
+
+ private:
+
+  double GetEnergy();
+
+  // number of real observables in use
+  int NbrRealObservables;
+
+  // number of comple observables in use
+  int NbrComplexObservables;
 
   
 };

@@ -136,6 +136,13 @@ class PairedCFOnSphereWaveFunction: public Abstract1DComplexTrialFunctionOnSpher
   // return value = function value at (uv)
   virtual Complex CalculateFromSpinorVariables(ComplexVector& uv);
 
+
+  // calculation of all derivatives (common interface)
+  // AllDerivatives = will be filled with output for derivatives
+  virtual void GetAllDerivatives(ComplexVector &AllDerivatives);
+
+  
+  // calculation of derivatives in interface compatible with old MonteCarlo code
   virtual void CalcAllDerivatives(ComplexVector &AllDerivatives, ComplexVector &Psi);
   
   // get a value of the wavefunction for the last set of coordinates, but with different variational coefficients
